@@ -22,6 +22,7 @@ export interface Article {
   seoTitle: string;
   seoDescription: string;
   seoKeywords: string[];
+  faq?: { question: string; answer: string }[];
   publishedAt: string;
   createdAt: string;
   updatedAt: string;

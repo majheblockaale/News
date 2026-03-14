@@ -5,11 +5,22 @@ import { useThemeStore, useMobileMenuStore } from "@/lib/store";
 import { categories } from "@/lib/mock-data";
 import { Search, Menu, X, Sun, Moon } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function Header() {
   const { isDark, toggle } = useThemeStore();
   const { isOpen, toggle: toggleMenu, close } = useMobileMenuStore();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--background)]/95 backdrop-blur-sm">
@@ -65,9 +76,12 @@ export function Header() {
                 <input
                   type="text"
                   placeholder="Search news..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="border border-[var(--border)] rounded-md px-3 py-1.5 text-sm bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-accent"
                   autoFocus
                   onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSearch();
                     if (e.key === "Escape") setSearchOpen(false);
                   }}
                 />

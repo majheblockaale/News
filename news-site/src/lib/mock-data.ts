@@ -39,6 +39,28 @@ export const categories: Category[] = [
   { id: "6", name: "Entertainment", slug: "entertainment", description: "Movies, music, TV, celebrities, and pop culture", metaTitle: "Entertainment News", metaDescription: "Entertainment news covering movies, music, TV shows, and pop culture.", color: "#ec4899", sortOrder: 6, isActive: true },
 ];
 
+export const subcategories: Category[] = [
+  { id: "101", name: "Artificial Intelligence", slug: "ai", description: "AI research, tools, and industry impact", metaTitle: "AI News", metaDescription: "Latest artificial intelligence news and developments.", parentId: "1", color: "#3b82f6", sortOrder: 1, isActive: true },
+  { id: "102", name: "Startups", slug: "startups", description: "Startup funding, launches, and founder stories", metaTitle: "Startup News", metaDescription: "Startup news covering funding, launches, and founder stories.", parentId: "1", color: "#3b82f6", sortOrder: 2, isActive: true },
+  { id: "103", name: "Gadgets", slug: "gadgets", description: "Consumer electronics, reviews, and product launches", metaTitle: "Gadget News", metaDescription: "Latest gadget reviews, launches, and consumer electronics.", parentId: "1", color: "#3b82f6", sortOrder: 3, isActive: true },
+  { id: "201", name: "Stock Market", slug: "stock-market", description: "Market analysis, stock picks, and trading", metaTitle: "Stock Market News", metaDescription: "Stock market analysis, trading insights, and market movements.", parentId: "2", color: "#10b981", sortOrder: 1, isActive: true },
+  { id: "202", name: "Economy", slug: "economy", description: "Economic policy, GDP, inflation, and indicators", metaTitle: "Economy News", metaDescription: "Economic news covering policy, inflation, and indicators.", parentId: "2", color: "#10b981", sortOrder: 2, isActive: true },
+  { id: "301", name: "Space", slug: "space", description: "Space exploration, astronomy, and NASA updates", metaTitle: "Space News", metaDescription: "Space news covering exploration, astronomy, and NASA.", parentId: "3", color: "#8b5cf6", sortOrder: 1, isActive: true },
+  { id: "302", name: "Environment", slug: "environment", description: "Climate change, conservation, and sustainability", metaTitle: "Environment News", metaDescription: "Environment news covering climate change and sustainability.", parentId: "3", color: "#8b5cf6", sortOrder: 2, isActive: true },
+  { id: "501", name: "Football", slug: "football", description: "Football news, transfers, scores, and analysis", metaTitle: "Football News", metaDescription: "Football news with transfers, scores, and expert analysis.", parentId: "5", color: "#f59e0b", sortOrder: 1, isActive: true },
+  { id: "502", name: "Basketball", slug: "basketball", description: "NBA news, scores, trades, and highlights", metaTitle: "Basketball News", metaDescription: "Basketball and NBA news with scores, trades, and highlights.", parentId: "5", color: "#f59e0b", sortOrder: 2, isActive: true },
+];
+
+export function getSubcategories(parentId: string): Category[] {
+  return subcategories.filter((sc) => sc.parentId === parentId);
+}
+
+export function getSubcategoryBySlug(parentSlug: string, subSlug: string): Category | undefined {
+  const parent = categories.find((c) => c.slug === parentSlug);
+  if (!parent) return undefined;
+  return subcategories.find((sc) => sc.parentId === parent.id && sc.slug === subSlug);
+}
+
 export const tags: Tag[] = [
   { id: "1", name: "Artificial Intelligence", slug: "artificial-intelligence", articleCount: 45 },
   { id: "2", name: "Climate Change", slug: "climate-change", articleCount: 32 },
@@ -83,6 +105,11 @@ export const articles: Article[] = [
     seoTitle: "OpenAI Unveils GPT-5: Unprecedented AI Reasoning Capabilities",
     seoDescription: "OpenAI launches GPT-5 with breakthrough reasoning abilities. Learn what this means for healthcare, finance, and everyday AI interactions.",
     seoKeywords: ["GPT-5", "OpenAI", "artificial intelligence", "AI reasoning"],
+    faq: [
+      { question: "What is GPT-5?", answer: "GPT-5 is OpenAI's latest and most advanced large language model, featuring breakthrough reasoning capabilities that surpass its predecessor GPT-4." },
+      { question: "How is GPT-5 different from GPT-4?", answer: "GPT-5 demonstrates significant improvements in logical reasoning, mathematical problem-solving, and contextual understanding compared to GPT-4." },
+      { question: "When will GPT-5 be available to the public?", answer: "OpenAI has begun rolling out GPT-5 access to ChatGPT Plus subscribers, with broader availability expected in the coming weeks." },
+    ],
     publishedAt: hoursAgo(2),
     createdAt: hoursAgo(4),
     updatedAt: hoursAgo(1),

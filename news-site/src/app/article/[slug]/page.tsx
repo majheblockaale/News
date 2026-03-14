@@ -96,6 +96,18 @@ export default async function ArticlePage({ params }: Props) {
     ],
   };
 
+  const faqLd = article.faq?.length
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: article.faq.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: { "@type": "Answer", text: item.answer },
+        })),
+      }
+    : null;
+
   return (
     <>
       <script
@@ -106,6 +118,12 @@ export default async function ArticlePage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
+      {faqLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        />
+      )}
       <div className="mx-auto max-w-7xl px-4 py-6">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="text-sm text-muted mb-4">
@@ -186,6 +204,24 @@ export default async function ArticlePage({ params }: Props) {
                 return <p key={i} className="mb-4 leading-relaxed">{paragraph}</p>;
               })}
             </div>
+
+            {/* FAQ Section */}
+            {article.faq && article.faq.length > 0 && (
+              <div className="mt-10 p-6 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                <h2 className="text-xl font-bold mb-4">Frequently Asked Questions</h2>
+                <div className="space-y-4">
+                  {article.faq.map((item, i) => (
+                    <details key={i} className="group">
+                      <summary className="cursor-pointer font-semibold text-[var(--foreground)] hover:text-accent transition-colors list-none flex items-center justify-between">
+                        {item.question}
+                        <span className="text-muted group-open:rotate-180 transition-transform">&#9660;</span>
+                      </summary>
+                      <p className="mt-2 text-muted leading-relaxed pl-0">{item.answer}</p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Tags */}
             {article.tags.length > 0 && (

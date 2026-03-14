@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { categories, getArticlesByCategory } from "@/lib/mock-data";
+import { categories, getArticlesByCategory, getSubcategories } from "@/lib/mock-data";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 
 interface Props {
@@ -31,6 +31,7 @@ export default async function CategoryPage({ params }: Props) {
   if (!category) notFound();
 
   const categoryArticles = getArticlesByCategory(slug);
+  const subs = getSubcategories(category.id);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
@@ -44,12 +45,33 @@ export default async function CategoryPage({ params }: Props) {
       </nav>
 
       {/* Header */}
-      <div className="mb-8 pb-4 border-b-2" style={{ borderColor: category.color }}>
+      <div className="mb-6 pb-4 border-b-2" style={{ borderColor: category.color }}>
         <h1 className="text-3xl font-bold" style={{ color: category.color }}>
           {category.name}
         </h1>
         <p className="mt-2 text-muted">{category.description}</p>
       </div>
+
+      {/* Subcategories */}
+      {subs.length > 0 && (
+        <div className="mb-8 flex flex-wrap gap-2">
+          <Link
+            href={`/category/${slug}`}
+            className="px-4 py-2 text-sm font-medium rounded-full bg-accent text-white"
+          >
+            All
+          </Link>
+          {subs.map((sub) => (
+            <Link
+              key={sub.id}
+              href={`/category/${slug}/${sub.slug}`}
+              className="px-4 py-2 text-sm font-medium rounded-full border border-[var(--border)] hover:bg-accent hover:text-white hover:border-accent transition-colors"
+            >
+              {sub.name}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* Articles Grid */}
       {categoryArticles.length > 0 ? (
