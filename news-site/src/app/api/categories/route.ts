@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
-import { categories, subcategories } from "@/lib/mock-data";
+import { getCategories, getSubcategories } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const result = categories.map((cat) => ({
-    ...cat,
-    subcategories: subcategories.filter((sc) => sc.parentId === cat.id),
-  }));
+  const categories = await getCategories();
+
+  const result = await Promise.all(
+    categories.map(async (cat) => ({
+      ...cat,
+      subcategories: await getSubcategories(cat.id),
+    }))
+  );
 
   return NextResponse.json({ categories: result });
 }
