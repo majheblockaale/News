@@ -1,8 +1,14 @@
 import type { MetadataRoute } from "next";
-import { articles, categories, authors } from "@/lib/mock-data";
+import { getArticles, getCategories, getAuthors } from "@/lib/db";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://newssite.com";
+
+  const [articles, categories, authors] = await Promise.all([
+    getArticles({ status: "published", limit: 1000 }),
+    getCategories(),
+    getAuthors(),
+  ]);
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: baseUrl, lastModified: new Date(), changeFrequency: "hourly", priority: 1.0 },
@@ -21,14 +27,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  const articlePages: MetadataRoute.Sitemap = articles
-    .filter((a) => a.status === "published")
-    .map((article) => ({
-      url: `${baseUrl}/article/${article.slug}`,
-      lastModified: new Date(article.updatedAt),
-      changeFrequency: "daily" as const,
-      priority: article.isFeatured ? 0.9 : 0.7,
-    }));
+  const articlePages: MetadataRoute.Sitemap = articles.map((article) => ({
+    url: `${baseUrl}/article/${article.slug}`,
+    lastModified: new Date(article.updatedAt),
+    changeFrequency: "daily" as const,
+    priority: article.isFeatured ? 0.9 : 0.7,
+  }));
 
   const authorPages: MetadataRoute.Sitemap = authors.map((author) => ({
     url: `${baseUrl}/author/${author.name.toLowerCase().replace(/\s+/g, "-")}`,

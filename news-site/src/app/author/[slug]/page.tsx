@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { authors, getArticlesByAuthor } from "@/lib/mock-data";
+import { getAuthors, getAuthorBySlug, getArticles } from "@/lib/db";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import Link from "next/link";
 
@@ -9,6 +9,7 @@ interface Props {
 }
 
 export async function generateStaticParams() {
+  const authors = await getAuthors();
   return authors.map((a) => ({
     slug: a.name.toLowerCase().replace(/\s+/g, "-"),
   }));
@@ -16,9 +17,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const author = authors.find(
-    (a) => a.name.toLowerCase().replace(/\s+/g, "-") === slug
-  );
+  const author = await getAuthorBySlug(slug);
   if (!author) return { title: "Author Not Found" };
 
   return {
@@ -30,13 +29,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AuthorPage({ params }: Props) {
   const { slug } = await params;
-  const author = authors.find(
-    (a) => a.name.toLowerCase().replace(/\s+/g, "-") === slug
-  );
+  const author = await getAuthorBySlug(slug);
 
   if (!author) notFound();
 
-  const authorArticles = getArticlesByAuthor(author.id);
+  const authorArticles = await getArticles({ status: "published", authorId: author.id });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">

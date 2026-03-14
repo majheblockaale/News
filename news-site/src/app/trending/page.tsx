@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getTrendingArticles } from "@/lib/mock-data";
+import { getArticles } from "@/lib/db";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 
 export const metadata: Metadata = {
@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://newssite.com/trending" },
 };
 
-export default function TrendingPage() {
-  const trending = getTrendingArticles(20);
+export default async function TrendingPage() {
+  const trending = await getArticles({ status: "published", orderBy: "trending", limit: 20 });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getLatestArticles } from "@/lib/mock-data";
+import { getArticles } from "@/lib/db";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 
 export const metadata: Metadata = {
@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://newssite.com/latest" },
 };
 
-export default function LatestPage() {
-  const latest = getLatestArticles(20);
+export default async function LatestPage() {
+  const latest = await getArticles({ status: "published", orderBy: "newest", limit: 20 });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">

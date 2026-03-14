@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { articles, categories } from "@/lib/mock-data";
+import type { Article, Category } from "@/types";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
@@ -12,39 +12,43 @@ export function SearchView() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"relevance" | "newest" | "oldest" | "popular">("relevance");
   const [showFilters, setShowFilters] = useState(false);
+  const [results, setResults] = useState<Article[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const results = useMemo(() => {
-    if (!query.trim()) return [];
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((data) => setCategories(data.categories || []));
+  }, []);
 
-    const q = query.toLowerCase();
-    let filtered = articles.filter(
-      (a) =>
-        a.status === "published" &&
-        (a.title.toLowerCase().includes(q) ||
-          a.excerpt.toLowerCase().includes(q) ||
-          a.content.toLowerCase().includes(q) ||
-          a.tags.some((t) => t.name.toLowerCase().includes(q)) ||
-          a.author.name.toLowerCase().includes(q))
-    );
-
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((a) => a.category.slug === selectedCategory);
+  const doSearch = useCallback(async () => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
     }
+    setLoading(true);
+    const params = new URLSearchParams({ q: query.trim(), limit: "50" });
+    if (selectedCategory !== "all") params.set("category", selectedCategory);
+    if (sortBy === "newest") params.set("sort", "newest");
+    if (sortBy === "oldest") params.set("sort", "oldest");
+    if (sortBy === "popular") params.set("sort", "trending");
 
-    switch (sortBy) {
-      case "newest":
-        filtered.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-        break;
-      case "oldest":
-        filtered.sort((a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime());
-        break;
-      case "popular":
-        filtered.sort((a, b) => b.viewCount - a.viewCount);
-        break;
+    try {
+      const res = await fetch(`/api/articles?${params}`);
+      const data = await res.json();
+      setResults(data.articles || []);
+    } catch {
+      setResults([]);
+    } finally {
+      setLoading(false);
     }
-
-    return filtered;
   }, [query, selectedCategory, sortBy]);
+
+  useEffect(() => {
+    const timer = setTimeout(doSearch, 300);
+    return () => clearTimeout(timer);
+  }, [doSearch]);
 
   return (
     <div>
@@ -120,7 +124,7 @@ export function SearchView() {
         {query.trim() ? (
           <>
             <p className="text-sm text-muted mb-6">
-              {results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;{query}&rdquo;
+              {loading ? "Searching..." : `${results.length} result${results.length !== 1 ? "s" : ""} for \u201c${query}\u201d`}
             </p>
             {results.length > 0 ? (
               <div className="space-y-6">
@@ -128,14 +132,14 @@ export function SearchView() {
                   <ArticleCard key={article.id} article={article} variant="horizontal" />
                 ))}
               </div>
-            ) : (
+            ) : !loading ? (
               <div className="text-center py-16">
                 <p className="text-lg font-medium">No results found</p>
                 <p className="text-muted mt-1">
                   Try different keywords or check your spelling.
                 </p>
               </div>
-            )}
+            ) : null}
           </>
         ) : (
           <div className="text-center py-16 text-muted">

@@ -1,13 +1,36 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useBookmarkStore } from "@/lib/store";
-import { articles } from "@/lib/mock-data";
+import type { Article } from "@/types";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { Bookmark } from "lucide-react";
 
 export default function SavedPage() {
   const { bookmarks } = useBookmarkStore();
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/articles?limit=100")
+      .then((res) => res.json())
+      .then((data) => {
+        setArticles(data.articles || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
   const savedArticles = articles.filter((a) => bookmarks.has(a.id));
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-6">
+        <h1 className="text-3xl font-bold mb-2">Saved Articles</h1>
+        <p className="text-muted mb-8">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">

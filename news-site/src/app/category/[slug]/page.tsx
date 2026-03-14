@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { categories, getArticlesByCategory, getSubcategories } from "@/lib/mock-data";
+import { getCategories, getCategoryBySlug, getSubcategories, getArticles } from "@/lib/db";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 
 interface Props {
@@ -9,12 +9,13 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  return categories.map((c) => ({ slug: c.slug }));
+  const cats = await getCategories();
+  return cats.map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const category = categories.find((c) => c.slug === slug);
+  const category = await getCategoryBySlug(slug);
   if (!category) return { title: "Category Not Found" };
 
   return {
@@ -26,12 +27,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
-  const category = categories.find((c) => c.slug === slug);
+  const category = await getCategoryBySlug(slug);
 
   if (!category) notFound();
 
-  const categoryArticles = getArticlesByCategory(slug);
-  const subs = getSubcategories(category.id);
+  const [categoryArticles, subs] = await Promise.all([
+    getArticles({ status: "published", categorySlug: slug }),
+    getSubcategories(category.id),
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">

@@ -1,10 +1,10 @@
 import { ArticleCard } from "@/components/ui/ArticleCard";
-import { getLatestArticles } from "@/lib/mock-data";
+import { getArticles } from "@/lib/db";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-export function LatestNewsSection() {
-  const latest = getLatestArticles(6);
+export async function LatestNewsSection() {
+  const latest = await getArticles({ status: "published", orderBy: "newest", limit: 6 });
 
   return (
     <section aria-label="Latest news">

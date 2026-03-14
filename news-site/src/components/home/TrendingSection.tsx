@@ -1,10 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getTrendingArticles } from "@/lib/mock-data";
+import { getArticles } from "@/lib/db";
 import { TrendingUp } from "lucide-react";
 
-export function TrendingSection() {
-  const trending = getTrendingArticles(5);
+export async function TrendingSection() {
+  const trending = await getArticles({ status: "published", orderBy: "trending", limit: 5 });
 
   return (
     <section aria-label="Trending stories">

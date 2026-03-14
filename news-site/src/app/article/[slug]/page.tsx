@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getArticleBySlug, getRelatedArticles, articles } from "@/lib/mock-data";
+import { getArticleBySlug, getRelatedArticles, getArticles } from "@/lib/db";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { ReadingProgressBar } from "@/components/ui/ReadingProgressBar";
 import { BookmarkButton } from "@/components/ui/BookmarkButton";
@@ -16,12 +16,13 @@ interface Props {
 }
 
 export async function generateStaticParams() {
+  const articles = await getArticles({ status: "published" });
   return articles.map((a) => ({ slug: a.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
   if (!article) return { title: "Article Not Found" };
 
   return {
@@ -53,11 +54,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
 
   if (!article) notFound();
 
-  const related = getRelatedArticles(article, 3);
+  const related = await getRelatedArticles(article, 3);
   const authorSlug = article.author.name.toLowerCase().replace(/\s+/g, "-");
 
   // JSON-LD structured data

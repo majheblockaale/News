@@ -1,9 +1,17 @@
-import { articles, categories, authors } from "@/lib/mock-data";
+import { getArticles, getCategories, getAuthors } from "@/lib/db";
 import { FileText, Eye, Share2, Users, TrendingUp, Clock } from "lucide-react";
 import Link from "next/link";
 
-export default function AdminDashboard() {
-  const published = articles.filter((a) => a.status === "published");
+export const dynamic = "force-dynamic";
+
+export default async function AdminDashboard() {
+  const [allArticles, categoryList, authorList] = await Promise.all([
+    getArticles({ limit: 100 }),
+    getCategories(),
+    getAuthors(),
+  ]);
+
+  const published = allArticles.filter((a) => a.status === "published");
   const totalViews = published.reduce((sum, a) => sum + a.viewCount, 0);
   const totalShares = published.reduce((sum, a) => sum + a.shareCount, 0);
   const avgReadTime =
@@ -15,8 +23,8 @@ export default function AdminDashboard() {
     { label: "Published Articles", value: published.length, icon: FileText, color: "text-blue-500" },
     { label: "Total Views", value: totalViews.toLocaleString(), icon: Eye, color: "text-green-500" },
     { label: "Total Shares", value: totalShares.toLocaleString(), icon: Share2, color: "text-purple-500" },
-    { label: "Authors", value: authors.length, icon: Users, color: "text-orange-500" },
-    { label: "Categories", value: categories.length, icon: TrendingUp, color: "text-pink-500" },
+    { label: "Authors", value: authorList.length, icon: Users, color: "text-orange-500" },
+    { label: "Categories", value: categoryList.length, icon: TrendingUp, color: "text-pink-500" },
     { label: "Avg Read Time", value: `${avgReadTime} min`, icon: Clock, color: "text-cyan-500" },
   ];
 
@@ -80,8 +88,8 @@ export default function AdminDashboard() {
           <h2 className="font-semibold">Articles by Category</h2>
         </div>
         <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-          {categories.map((cat) => {
-            const count = articles.filter((a) => a.category.id === cat.id).length;
+          {categoryList.map((cat) => {
+            const count = allArticles.filter((a) => a.category.id === cat.id).length;
             return (
               <div key={cat.id} className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />

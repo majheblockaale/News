@@ -1,17 +1,24 @@
 import { ArticleCard } from "@/components/ui/ArticleCard";
-import { categories, getArticlesByCategory } from "@/lib/mock-data";
+import { getCategories, getArticles } from "@/lib/db";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-export function CategoryHighlights() {
+export async function CategoryHighlights() {
+  const categories = await getCategories();
   const highlightCategories = categories.slice(0, 4);
+
+  const categoryData = await Promise.all(
+    highlightCategories.map(async (cat) => ({
+      category: cat,
+      articles: (await getArticles({ status: "published", categorySlug: cat.slug, limit: 2 })),
+    }))
+  );
 
   return (
     <section aria-label="Category highlights">
       <h2 className="text-lg font-bold mb-6">Explore by Category</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {highlightCategories.map((cat) => {
-          const catArticles = getArticlesByCategory(cat.slug).slice(0, 2);
+        {categoryData.map(({ category: cat, articles: catArticles }) => {
           if (catArticles.length === 0) return null;
           return (
             <div key={cat.id}>

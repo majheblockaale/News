@@ -1,8 +1,8 @@
 import { ArticleCard } from "@/components/ui/ArticleCard";
-import { getFeaturedArticles } from "@/lib/mock-data";
+import { getArticles } from "@/lib/db";
 
-export function HeroSection() {
-  const featured = getFeaturedArticles();
+export async function HeroSection() {
+  const featured = await getArticles({ status: "published", featured: true, limit: 3 });
   const hero = featured[0];
   const sideStories = featured.slice(1, 3);
 

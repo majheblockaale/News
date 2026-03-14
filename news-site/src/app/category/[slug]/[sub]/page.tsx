@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { categories, subcategories, getSubcategories, getSubcategoryBySlug, getArticlesByCategory } from "@/lib/mock-data";
+import { getCategories, getCategoryBySlug, getSubcategories, getSubcategoryBySlug, getArticles } from "@/lib/db";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 
 interface Props {
@@ -9,9 +9,10 @@ interface Props {
 }
 
 export async function generateStaticParams() {
+  const cats = await getCategories();
   const params: { slug: string; sub: string }[] = [];
-  for (const cat of categories) {
-    const subs = getSubcategories(cat.id);
+  for (const cat of cats) {
+    const subs = await getSubcategories(cat.id);
     for (const sub of subs) {
       params.push({ slug: cat.slug, sub: sub.slug });
     }
@@ -21,7 +22,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, sub } = await params;
-  const subcategory = getSubcategoryBySlug(slug, sub);
+  const subcategory = await getSubcategoryBySlug(slug, sub);
   if (!subcategory) return { title: "Not Found" };
 
   return {
@@ -33,14 +34,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SubcategoryPage({ params }: Props) {
   const { slug, sub } = await params;
-  const parent = categories.find((c) => c.slug === slug);
-  const subcategory = getSubcategoryBySlug(slug, sub);
+  const parent = await getCategoryBySlug(slug);
+  const subcategory = await getSubcategoryBySlug(slug, sub);
 
   if (!parent || !subcategory) notFound();
 
-  const subs = getSubcategories(parent.id);
-  // For now, subcategory pages show parent category articles (in a real app these would be filtered)
-  const articles = getArticlesByCategory(slug);
+  const [subs, articles] = await Promise.all([
+    getSubcategories(parent.id),
+    getArticles({ status: "published", categorySlug: slug }),
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">

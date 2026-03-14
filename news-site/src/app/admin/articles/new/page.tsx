@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { categories } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
 import { slugify } from "@/lib/utils";
-import { Save, Eye, ArrowLeft } from "lucide-react";
+import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { Category } from "@/types";
 
 export default function NewArticlePage() {
+  const router = useRouter();
+  const [categories, setCategories] = useState<Category[]>([]);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -18,7 +21,13 @@ export default function NewArticlePage() {
   const [featuredImageUrl, setFeaturedImageUrl] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isBreaking, setIsBreaking] = useState(false);
-  const [tags, setTags] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((data) => setCategories(data.categories || []));
+  }, []);
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -26,24 +35,45 @@ export default function NewArticlePage() {
     if (!seoTitle) setSeoTitle(value);
   };
 
-  const handleSave = () => {
-    // In a real app, this would POST to the API
-    const article = {
-      title,
-      slug,
-      excerpt,
-      content,
-      categoryId,
-      status,
-      seoTitle,
-      seoDescription,
-      featuredImageUrl,
-      isFeatured,
-      isBreaking,
-      tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
-    };
-    console.log("Saving article:", article);
-    alert("Article saved! (Demo — no backend connected)");
+  const handleSave = async () => {
+    if (!title || !content || !categoryId) {
+      alert("Title, content, and category are required.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/articles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          slug,
+          excerpt,
+          content,
+          categoryId,
+          status,
+          seoTitle,
+          seoDescription,
+          featuredImageUrl,
+          isFeatured,
+          isBreaking,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to save article");
+        return;
+      }
+
+      router.push("/admin/articles");
+      router.refresh();
+    } catch {
+      alert("An error occurred while saving.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const wordCount = content.split(/\s+/).filter(Boolean).length;
@@ -59,10 +89,11 @@ export default function NewArticlePage() {
         <div className="ml-auto flex items-center gap-2">
           <button
             onClick={handleSave}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-accent text-white rounded-md hover:bg-accent/90 transition-colors"
+            disabled={saving}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-accent text-white rounded-md hover:bg-accent/90 transition-colors disabled:opacity-50"
           >
             <Save size={14} />
-            Save {status === "published" ? "& Publish" : "Draft"}
+            {saving ? "Saving..." : status === "published" ? "Save & Publish" : "Save Draft"}
           </button>
         </div>
       </div>
@@ -176,20 +207,6 @@ export default function NewArticlePage() {
               value={featuredImageUrl}
               onChange={(e) => setFeaturedImageUrl(e.target.value)}
               placeholder="https://images.unsplash.com/..."
-              className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-md bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-          </div>
-
-          {/* Tags */}
-          <div className="md:col-span-2">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-muted mb-1.5">
-              Tags (comma-separated)
-            </label>
-            <input
-              type="text"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="AI, technology, breaking news"
               className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-md bg-[var(--background)] focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { tags, articles } from "@/lib/mock-data";
+import { getTags, getTagBySlug, getArticlesByTag } from "@/lib/db";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { Hash } from "lucide-react";
 
@@ -10,12 +10,13 @@ interface Props {
 }
 
 export async function generateStaticParams() {
+  const tags = await getTags();
   return tags.map((t) => ({ slug: t.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const tag = tags.find((t) => t.slug === slug);
+  const tag = await getTagBySlug(slug);
   if (!tag) return { title: "Tag Not Found" };
 
   return {
@@ -27,13 +28,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TagPage({ params }: Props) {
   const { slug } = await params;
-  const tag = tags.find((t) => t.slug === slug);
+  const tag = await getTagBySlug(slug);
 
   if (!tag) notFound();
 
-  const tagArticles = articles.filter(
-    (a) => a.status === "published" && a.tags.some((t) => t.slug === slug)
-  );
+  const [tagArticles, allTags] = await Promise.all([
+    getArticlesByTag(slug),
+    getTags(),
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
@@ -65,7 +67,7 @@ export default async function TagPage({ params }: Props) {
 
       {/* All Tags */}
       <div className="mb-8 flex flex-wrap gap-2">
-        {tags.map((t) => (
+        {allTags.map((t) => (
           <Link
             key={t.id}
             href={`/tag/${t.slug}`}
