@@ -3,6 +3,9 @@ import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { NewsletterPopup } from "@/components/ui/NewsletterPopup";
+import { BreakingNewsTicker } from "@/components/ui/BreakingNewsTicker";
+import { BackToTop } from "@/components/ui/BackToTop";
+import { ToastContainer } from "@/components/ui/Toast";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
@@ -66,11 +69,14 @@ export default function RootLayout({
           <a href="#main-content" className="skip-to-content">
             Skip to content
           </a>
+          <BreakingNewsTicker />
           <Header />
           <main id="main-content" className="flex-1">
             {children}
           </main>
           <Footer />
+          <BackToTop />
+          <ToastContainer />
           <NewsletterPopup />
         </ThemeProvider>
       </body>

@@ -7,6 +7,7 @@ import { ArticleCard } from "@/components/ui/ArticleCard";
 import { ReadingProgressBar } from "@/components/ui/ReadingProgressBar";
 import { BookmarkButton } from "@/components/ui/BookmarkButton";
 import { ShareButton } from "@/components/ui/ShareButton";
+import { CommentSection } from "@/components/ui/CommentSection";
 import { formatDate } from "@/lib/utils";
 import { Clock } from "lucide-react";
 
@@ -258,6 +259,9 @@ export default async function ArticlePage({ params }: Props) {
                 </div>
               </div>
             </div>
+
+            {/* Comments */}
+            <CommentSection articleId={article.id} />
 
             {/* Related Articles */}
             {related.length > 0 && (
