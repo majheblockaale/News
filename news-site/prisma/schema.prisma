@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  editor
+  author
+  subscriber
+}
+
+enum ArticleStatus {
+  draft
+  review
+  published
+  archived
+}
+
+enum MediaType {
+  image
+  video
+  infographic
+}
+
+enum NewsletterFrequency {
+  daily
+  weekly
+  breaking_only
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  name        String
+  role        UserRole @default(subscriber)
+  avatarUrl   String?  @map("avatar_url")
+  bio         String?
+  socialLinks Json?    @map("social_links")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  articles Article[]
+  comments Comment[]
+
+  @@map("users")
+}
+
+model Category {
+  id              String  @id @default(uuid())
+  name            String
+  slug            String  @unique
+  description     String?
+  metaTitle       String? @map("meta_title")
+  metaDescription String? @map("meta_description")
+  parentId        String? @map("parent_id")
+  icon            String?
+  color           String  @default("#3b82f6")
+  sortOrder       Int     @default(0) @map("sort_order")
+  isActive        Boolean @default(true) @map("is_active")
+
+  parent   Category?  @relation("CategoryChildren", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryChildren")
+  articles Article[]
+
+  @@index([slug])
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Article {
+  id               String        @id @default(uuid())
+  title            String
+  slug             String        @unique
+  excerpt          String?
+  content          String
+  featuredImageUrl String?       @map("featured_image_url")
+  featuredImageAlt String?       @map("featured_image_alt")
+  authorId         String        @map("author_id")
+  categoryId       String        @map("category_id")
+  status           ArticleStatus @default(draft)
+  isFeatured       Boolean       @default(false) @map("is_featured")
+  isBreaking       Boolean       @default(false) @map("is_breaking")
+  isEvergreen      Boolean       @default(false) @map("is_evergreen")
+  sourceUrl        String?       @map("source_url")
+  sourceName       String?       @map("source_name")
+  readingTime      Int           @default(1) @map("reading_time_minutes")
+  wordCount        Int           @default(0) @map("word_count")
+  viewCount        Int           @default(0) @map("view_count")
+  shareCount       Int           @default(0) @map("share_count")
+  seoTitle         String?       @map("seo_title")
+  seoDescription   String?       @map("seo_description")
+  seoKeywords      String[]      @map("seo_keywords")
+  schemaMarkup     Json?         @map("schema_markup")
+  publishedAt      DateTime?     @map("published_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  author   User     @relation(fields: [authorId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+  tags     ArticleTag[]
+  comments Comment[]
+
+  @@index([slug])
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([categoryId, publishedAt(sort: Desc)])
+  @@index([authorId])
+  @@map("articles")
+}
+
+model Tag {
+  id           String @id @default(uuid())
+  name         String
+  slug         String @unique
+  articleCount Int    @default(0) @map("article_count")
+
+  articles ArticleTag[]
+
+  @@index([slug])
+  @@map("tags")
+}
+
+model ArticleTag {
+  articleId String @map("article_id")
+  tagId     String @map("tag_id")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@map("article_tags")
+}
+
+model Comment {
+  id         String  @id @default(uuid())
+  articleId  String  @map("article_id")
+  userId     String  @map("user_id")
+  parentId   String? @map("parent_id")
+  content    String
+  isApproved Boolean @default(false) @map("is_approved")
+  likesCount Int     @default(0) @map("likes_count")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  article Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id])
+  parent  Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([articleId, isApproved, createdAt(sort: Desc)])
+  @@map("comments")
+}
+
+model Newsletter {
+  id           String              @id @default(uuid())
+  email        String              @unique
+  categories   String[]
+  frequency    NewsletterFrequency @default(daily)
+  isVerified   Boolean             @default(false) @map("is_verified")
+  subscribedAt DateTime            @default(now()) @map("subscribed_at")
+
+  @@map("newsletters")
+}
+
+model Media {
+  id        String    @id @default(uuid())
+  url       String
+  altText   String?   @map("alt_text")
+  caption   String?
+  type      MediaType @default(image)
+  sizeBytes Int?      @map("size_bytes")
+  width     Int?
+  height    Int?
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  @@map("media")
+}
+
+model Redirect {
+  id         String @id @default(uuid())
+  fromPath   String @map("from_path")
+  toPath     String @map("to_path")
+  statusCode Int    @default(301) @map("status_code")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("redirects")
+}
