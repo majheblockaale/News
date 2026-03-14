@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Article } from "@/types";
 import { timeAgo } from "@/lib/utils";
+import { BookmarkButton } from "./BookmarkButton";
 
 interface ArticleCardProps {
   article: Article;
@@ -19,6 +20,7 @@ export function ArticleCard({ article, variant = "default" }: ArticleCardProps) 
             src={article.featuredImageUrl}
             alt={article.featuredImageAlt}
             fill
+            loading="lazy"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             sizes="80px"
           />
@@ -43,17 +45,21 @@ export function ArticleCard({ article, variant = "default" }: ArticleCardProps) 
             src={article.featuredImageUrl}
             alt={article.featuredImageAlt}
             fill
+            loading="lazy"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             sizes="192px"
           />
         </div>
         <div className="flex-1 min-w-0">
-          <span
-            className="text-xs font-semibold uppercase tracking-wider"
-            style={{ color: article.category.color }}
-          >
-            {article.category.name}
-          </span>
+          <div className="flex items-start justify-between">
+            <span
+              className="text-xs font-semibold uppercase tracking-wider"
+              style={{ color: article.category.color }}
+            >
+              {article.category.name}
+            </span>
+            <BookmarkButton articleId={article.id} size={14} />
+          </div>
           <Link href={href}>
             <h3 className="mt-1 font-bold leading-tight line-clamp-2 group-hover:text-accent transition-colors">
               {article.title}
@@ -85,6 +91,9 @@ export function ArticleCard({ article, variant = "default" }: ArticleCardProps) 
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          <div className="absolute top-3 right-3 z-10">
+            <BookmarkButton articleId={article.id} size={18} />
+          </div>
           <div className="absolute bottom-0 left-0 right-0 p-6">
             {article.isBreaking && (
               <span className="inline-block text-xs font-bold uppercase tracking-wider bg-accent text-white px-2 py-1 rounded mb-2">
@@ -123,17 +132,21 @@ export function ArticleCard({ article, variant = "default" }: ArticleCardProps) 
           src={article.featuredImageUrl}
           alt={article.featuredImageAlt}
           fill
+          loading="lazy"
           className="object-cover group-hover:scale-105 transition-transform duration-300"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
       </div>
       <div className="p-4">
-        <span
-          className="text-xs font-semibold uppercase tracking-wider"
-          style={{ color: article.category.color }}
-        >
-          {article.category.name}
-        </span>
+        <div className="flex items-start justify-between">
+          <span
+            className="text-xs font-semibold uppercase tracking-wider"
+            style={{ color: article.category.color }}
+          >
+            {article.category.name}
+          </span>
+          <BookmarkButton articleId={article.id} size={14} />
+        </div>
         <Link href={href}>
           <h3 className="mt-1 font-bold leading-tight line-clamp-2 group-hover:text-accent transition-colors">
             {article.title}

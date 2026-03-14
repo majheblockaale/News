@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { NewsletterPopup } from "@/components/ui/NewsletterPopup";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
@@ -54,6 +55,11 @@ export default function RootLayout({
       <head>
         <meta name="news_keywords" content="breaking news, latest news, technology, business" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#2563eb" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="NewsSite" />
       </head>
       <body className="min-h-screen flex flex-col antialiased">
         <ThemeProvider>
@@ -65,6 +71,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <NewsletterPopup />
         </ThemeProvider>
       </body>
     </html>

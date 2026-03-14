@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useThemeStore, useMobileMenuStore } from "@/lib/store";
 import { categories } from "@/lib/mock-data";
-import { Search, Menu, X, Sun, Moon } from "lucide-react";
+import { Search, Menu, X, Sun, Moon, Bookmark } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -98,6 +98,15 @@ export function Header() {
                 <Search size={20} />
               </button>
             )}
+
+            {/* Saved Articles */}
+            <Link
+              href="/saved"
+              className="p-2 rounded-md hover:bg-[var(--surface)] transition-colors"
+              aria-label="Saved articles"
+            >
+              <Bookmark size={20} />
+            </Link>
 
             {/* Dark Mode Toggle */}
             <button

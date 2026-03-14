@@ -4,8 +4,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getArticleBySlug, getRelatedArticles, articles } from "@/lib/mock-data";
 import { ArticleCard } from "@/components/ui/ArticleCard";
+import { ReadingProgressBar } from "@/components/ui/ReadingProgressBar";
+import { BookmarkButton } from "@/components/ui/BookmarkButton";
+import { ShareButton } from "@/components/ui/ShareButton";
 import { formatDate } from "@/lib/utils";
-import { Clock, Share2, Facebook, Linkedin } from "lucide-react";
+import { Clock } from "lucide-react";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -124,6 +127,7 @@ export default async function ArticlePage({ params }: Props) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
         />
       )}
+      <ReadingProgressBar />
       <div className="mx-auto max-w-7xl px-4 py-6">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="text-sm text-muted mb-4">
@@ -170,16 +174,13 @@ export default async function ArticlePage({ params }: Props) {
               <span className="flex items-center gap-1">
                 <Clock size={14} /> {article.readingTimeMinutes} min read
               </span>
-              <div className="flex items-center gap-2 ml-auto">
-                <button className="p-1.5 rounded hover:bg-[var(--surface)]" aria-label="Share on Facebook">
-                  <Facebook size={16} />
-                </button>
-                <button className="p-1.5 rounded hover:bg-[var(--surface)]" aria-label="Share on LinkedIn">
-                  <Linkedin size={16} />
-                </button>
-                <button className="p-1.5 rounded hover:bg-[var(--surface)]" aria-label="Share">
-                  <Share2 size={16} />
-                </button>
+              <div className="flex items-center gap-1 ml-auto">
+                <BookmarkButton articleId={article.id} showLabel />
+                <ShareButton
+                  url={`/article/${article.slug}`}
+                  title={article.title}
+                  description={article.excerpt}
+                />
               </div>
             </div>
 
