@@ -127,6 +127,15 @@ export async function getArticles(opts?: {
   return rows.map((r) => parseArticle(r as unknown as ArticleRow));
 }
 
+export async function getArticleById(id: string): Promise<Article | null> {
+  const row = await prisma.article.findUnique({
+    where: { id },
+    include: articleInclude,
+  });
+  if (!row) return null;
+  return parseArticle(row as unknown as ArticleRow);
+}
+
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   const row = await prisma.article.findUnique({
     where: { slug },

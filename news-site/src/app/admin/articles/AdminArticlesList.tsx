@@ -147,9 +147,13 @@ export function AdminArticlesList({ articles, categories }: Props) {
                       >
                         <Eye size={14} className="text-muted" />
                       </Link>
-                      <button className="p-1.5 rounded hover:bg-[var(--surface)]" title="Edit">
+                      <Link
+                        href={`/admin/articles/${article.id}/edit`}
+                        className="p-1.5 rounded hover:bg-[var(--surface)]"
+                        title="Edit"
+                      >
                         <Pencil size={14} className="text-muted" />
-                      </button>
+                      </Link>
                       <button
                         onClick={() => handleDelete(article.id)}
                         className="p-1.5 rounded hover:bg-[var(--surface)]"
